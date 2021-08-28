@@ -1,0 +1,130 @@
+---
+title: "Assignment 1 - Basic Loading and Transformation:  \nUsing  \nFiveThiryEight Story 'Where Police Have Killed Americans in 2015'"
+author: "Alan Noel"
+date: "8/28/2021"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+This data is from the fivethirtyeight web site and documents police killings in the 
+United states for the year 2015. It is the data behind the fivethirtyeight story
+"Where Police Have Killed Americans in 2015". The data set was pulled
+together using data collected by the Guardian newspaper of the UK and  
+from the US Census. 
+
+My purpose in using this data set was to investigate how 
+many blacks and black males are the victims. Are the amounts disproportionate?  
+
+# Get Data and Do Some Exploration
+
+## Retrieve Raw CSV file from GitHub
+
+I placed a copy of fivethirtyeight's data set onto my area of 
+GitHub. 
+
+```{r retrieve csv file from GitHub}
+library(curl)
+origcsv <- 
+read.csv( curl("https://raw.githubusercontent.com/alnoel/CUNYSPS-Data607/main/police_killings.csv"))
+```
+
+## Display Structure of the Data Frame Created from the Original CSV File 
+
+The data set comprises 467 observations of 38 variables. I find it 
+interesting that none of the character variables imported as factors
+even though I did not specify "stringsAsFactors = FALSE". Although
+factors are useful in analysis my limited experience has been to 
+prefer to make factors as I need them and not get them automatically.
+
+```{r structure}
+str(origcsv)
+```
+
+# Dataframe Adjustments
+
+## Drop Some of the Columns Not of Interest to My Purposes 
+
+```{r drop columns}
+# drop columns not of interest at the moment
+
+df_trimmed = 
+subset(origcsv, select = -c(state_fp,county_fp, tract_ce,geo_id,  
+                            share_white,share_black,share_hispanic))
+```
+
+## Rename Some of the Columns to be More Meaningful
+
+```{r rename columns}
+library(dplyr)
+df_trimmed <- rename(df_trimmed,
+                     Tract_description = namelsad,
+                     Tract_unemployment = urate,
+                     Tract_population = pop
+                     )
+
+```
+
+# Analysis 
+
+## What are the proportions by racial/ethnic groups? 
+
+```{r}
+
+round(prop.table(table(df_trimmed$raceethnicity)),2)
+```
+
+It is easier to see proportions with a bar plot
+
+```{r}
+counts <- prop.table(table(df_trimmed$raceethnicity))
+barplot(counts, main ="Proportions By Race 2015", cex.names = 0.6, xlab ="Race",
+        ylab = "Proportion",ylim = c(0.0,1.0))
+abline(h = 0.5)
+```
+
+17.9 percent of the US Population was black in 2015 yet 29% of
+those killed by police were black. 76.3% of the population was white
+but only 51% of those killed by police were white. 
+
+
+## What is the proportion that is black males? 
+
+```{r NA and Calculate Proportion}
+# change all race ethnicity values to NA if "Unknown"
+
+df_trimmed$raceethnicity <- na_if(df_trimmed$raceethnicity,"Unknown")
+
+# Determine the number of black males
+
+num_blackmale <- sum(df_trimmed$raceethnicity == "Black" & df_trimmed$gender =="Male",na.rm=TRUE)
+num_obs  <-nrow(df_trimmed) 
+(prcnt_blackmale <- num_blackmale / num_obs)
+
+```
+
+The majority of black victims are males. 29% of the
+victims are black and 27% are black males. 
+
+
+# Conclusion
+
+There appears to be evidence of blacks and black males
+being disproportionately the victims of police killings
+in the US during the calendar year 2015. If this 
+was a situation where we conducted a hypothesis test
+I suspect we would be rejecting the null hypothesis
+and concluding there is something other than
+chance shaping the outcome.
+
+
+
+
+
+
