@@ -1,0 +1,99 @@
+---
+title: "SQL and R Assignment - Create Data in a DBMS and Get It to R"
+author: "Alan Noel"
+date: "9/2/2021"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+# Introduction
+This exercise was to learn how to create some data in a 
+DBMS, in this case MySQL, and get that data into R. 
+The MySQL database joins together a couple of tables
+of data regarding movie reviews. It then places that flattened set of data 
+out into a CSV file. 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Load tidyverse
+
+
+```{r tidy, warning = FALSE, message=FALSE}
+library(tidyverse)
+```
+
+# Retrieve Data from GitHub
+
+```{r load csv, echo=FALSE}
+library(curl)
+# moviereviews <- read_csv("moviereviews.csv")
+moviereviews <- 
+read.csv( curl("https://raw.githubusercontent.com/alnoel/CUNYSPS-Data607/main/moviereviews.csv"))
+
+```
+
+# Check for NA's in All the Columns - One Column, 'rating' Has Some NA's
+
+```{r}
+df <- as.data.frame(
+  cbind(
+    lapply(
+      lapply(moviereviews, is.na), sum)
+  )
+)
+
+rownames(subset(df, df$V1 != 0))
+```
+
+# Histogram of Ratings Before Imputation
+```{r before imputation}
+hist(moviereviews$rating, xlab= 'Ratings ', main = "Before Imputation\n Distribution of Ratings",col="darkmagenta")
+
+```
+
+
+
+
+
+
+# Use Median Imputation to Replace NA's in 'Rating' Column 
+
+```{r impute missing values}
+moviereviews <- moviereviews %>% 
+                mutate(rating = ifelse(is.na(rating),
+                                as.integer(median(rating, na.rm = TRUE)),
+                              rating))
+```
+
+# Check Again to Ensure All NA's Replaced 
+
+```{r impute check }
+df <- as.data.frame(
+  cbind(
+    lapply(
+      lapply(moviereviews, is.na), sum)
+  )
+)
+
+rownames(subset(df, df$V1 != 0))
+```
+
+
+# Histogram of Ratings After Imputation
+```{r after imputation}
+hist(moviereviews$rating, xlab= 'Ratings ', main = "After Imputation\nDistribution of Ratings",col="darkmagenta")
+
+```
+
+# Observation
+
+Imputation seems to provide values consistent with what I would expect. Because
+all six movies are quite popular I would expect the ratings to tend high and 
+the imputation results in a bit higher scores. I don't think it is the case 
+the imputation biased the data but actually helped provide a more realistic 
+data set. 
+
+
