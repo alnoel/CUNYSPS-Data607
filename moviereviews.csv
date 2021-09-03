@@ -1,0 +1,31 @@
+reviewid,reviewer_name,rating,title,movieid,prodcompany,length,releasedateus
+18,Leo,3,Black Widow,5,Marvel Studios,134,2021-06-29
+19,Susan,1,Black Widow,5,Marvel Studios,134,2021-06-29
+22,Joe,1,Black Widow,5,Marvel Studios,134,2021-06-29
+25,Bubba,4,Black Widow,5,Marvel Studios,134,2021-06-29
+26,Angela,2,Black Widow,5,Marvel Studios,134,2021-06-29
+2,Susan,3,Judas and the Black Messiah,4,Bron Creative,126,2021-02-01
+13,Leo,2,Judas and the Black Messiah,4,Bron Creative,126,2021-02-01
+17,Joe,2,Judas and the Black Messiah,4,Bron Creative,126,2021-02-01
+20,Bubba,3,Judas and the Black Messiah,4,Bron Creative,126,2021-02-01
+21,Angela,3,Judas and the Black Messiah,4,Bron Creative,126,2021-02-01
+4,Leo,2,News of the World,2,Universal,118,2020-12-25
+7,Joe,5,News of the World,2,Universal,118,2020-12-25
+8,Susan,2,News of the World,2,Universal,118,2020-12-25
+10,Bubba,1,News of the World,2,Universal,118,2020-12-25
+11,Angela,4,News of the World,2,Universal,118,2020-12-25
+23,Leo,2,Nomad,6,Highwayman Films,108,2021-02-19
+24,Susan,NA,Nomad,6,Highwayman Films,108,2021-02-19
+27,Joe,1,Nomad,6,Highwayman Films,108,2021-02-19
+29,Linda,3,Nomad,6,Highwayman Films,108,2021-02-19
+30,Bunny,3,Nomad,6,Highwayman Films,108,2021-02-19
+9,Leo,NA,The Little Things,3,Warner Brothers,128,2021-01-29
+12,Joe,NA,The Little Things,3,Warner Brothers,128,2021-01-29
+14,Susan,NA,The Little Things,3,Warner Brothers,128,2021-01-29
+15,Bubba,NA,The Little Things,3,Warner Brothers,128,2021-01-29
+16,Angela,2,The Little Things,3,Warner Brothers,128,2021-01-29
+28,Carl,1,The Little Things,3,Warner Brothers,128,2021-01-29
+1,Leo,NA,Wonder Woman 1984,1,DC Films,151,2020-12-25
+3,Susan,3,Wonder Woman 1984,1,DC Films,151,2020-12-25
+5,Bubba,3,Wonder Woman 1984,1,DC Films,151,2020-12-25
+6,Angela,1,Wonder Woman 1984,1,DC Films,151,2020-12-25
