@@ -1,0 +1,253 @@
+---
+title: "DATA 607 Week 3 Assignment - Strings and Regular Expressions"
+author: "Alan Noel"
+date: "9/12/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Task 1 - Find "DATA" and "STATISTICS" 
+
+Using the 173 majors listed in fivethirtyeight.com's College Majors data set 
+provide code that identifies the majors that contain either
+"DATA" or "STATISTICS".
+
+The fivethirtyeight data set is at:
+
+https://github.com/fivethirtyeight/data/blob/master/college-majors/majors-list.csv
+
+## Download dataset CSV file from my GitHub repository. 
+
+
+```{r retrieve-majors-list}
+library(curl)
+majors <- 
+read.csv (curl("https://raw.githubusercontent.com/alnoel/CUNYSPS-Data607/main/majorslist.csv"))
+head(majors)
+
+```
+
+## Create a Function to Find the Majors with the Search Words
+
+```{r create-function}
+findmajor <- function(srchword){
+  
+  loc <- grep(srchword,majors$Major)
+  return(majors$Major[loc])
+}
+```
+
+##  Place values we are looking for into a character vector
+```{r create-list}
+majorlist <- c("DATA","STATISTICS")
+```
+
+## Apply the function to all values in the character vector 
+## and store values in a vector. Then loop through the vector
+## and print out the majors found
+
+```{r}
+holdmajors <- sapply(majorlist, findmajor)
+for (i in 1:length(holdmajors)){
+  print(holdmajors[i])
+
+}
+
+```
+
+
+# Task 2 - Take a List of Character Values in A Vector
+# and Put Out the Creation Statement 
+# for that Vector 
+
+Create Vector
+
+```{r create-vector}
+raw.data <- c("bell pepper", "bilberry", "black berry",  "blood orange", 
+              "blueberry", "cantaloupe", "chili pepper", "cloudberry",
+              "elder berry", "lime lychee", "mulberry", "olive", "salal berry")
+```
+
+
+Convert the character vector of the terms to a single string
+with commas separating the terms, just commas, no spaces 
+
+```{r create-string}
+hold <- paste(raw.data,sep = "", collapse = ",")
+```
+
+Output the vector creation statement a bit at a time using the cat function. 
+Loop through the string looking for commas.At the point a comma is encountered 
+we are the end of a value/term.
+
+
+```{r find-terms}
+itemcount <- 0
+
+
+
+for (i in 1:nchar(hold)){
+  if (i ==1){
+    cat("c")
+    cat('("')}
+
+  # if not a comma then keep outputting
+  # characters one at a time
+  
+    if (substr(hold,i,i) != ","){
+    cat(substr(hold,i,i))
+    
+  }
+  
+  
+  # if at a comma output one surrounded 
+  # by double quotes. 
+  
+  # track items so at about halfway
+  # through the set go to a new line
+  # keep output tidy and within page width
+  # break at a comma and not within an item
+  
+  if (substr(hold,i,i) == ","){
+    cat('","')
+    itemcount <- itemcount + 1
+  }
+  
+  
+  if ((itemcount == 6 ) & (substr(hold,i,i) == ",")){
+    
+    cat("\n")
+    
+  }
+  if (i== nchar(hold)){
+    cat('")')
+  }
+  
+}
+
+
+
+```
+
+
+# Task 3 - Describe, in words, what these expressions will match:
+
+
+(.)\1\1   This will not find anything. It will error. It is missing enclosure
+by double quotes. Also We have one capturing group 
+and it then refers to that capturing group twice but it does not
+escape the tagging of the capturing group properly. It is escaped incorrectly 
+using one backslash when it should use two. It's an attempt at 
+"backreferencing". A capturing group stores the part of the string matched by
+the part of the regular expression inside the parentheses.
+I can run it against a vector of values with a couple that have three characters
+in a row and it returns nothing. But with two backslashes it will find 
+the same character appearing three times in a row. For example, "aaa". 
+With two backslashes it is saying to use the capturing group twice. 
+
+```{r}
+library(stringr)
+stuff <- c("111","123","aaa","zxy")
+str_subset(stuff,"(.)\1\1")
+str_subset(stuff,"(.)\\1\\1")
+```
+
+
+"(.)(.)\\\2\\\1"   This will find two characters followed by those characters
+in reverse order. An example might be "cddc". It does this by invoking
+the second capture group with the two and then the first capture group with
+the 1 thus getting the reversal matching. 
+   
+```{r two-then-reverse}
+stuff <- c("abdc","cddc","1234", "xyyx")
+str_subset(stuff, "(.)(.)\\2\\1")
+
+
+```
+ 
+
+(..)\1  This will not work. It will error. It is missing enclosure
+by double quotes.The use of backreferencing will not work 
+because the backslash has not been repeated, escaped. It could be corrected to 
+find a pair of characters repeated such as "klkl" or "abab123".
+When I correct it then we get hits on repeating any pair of two characters
+one right after the other.  
+
+
+```{r two-pairs}
+stuff <- c("klkl","abab123","123yoyo","ab1ab")
+str_subset(stuff,"(..)\1" )
+str_subset(stuff, "(..)\\1")
+```
+
+
+"(.).\\1.\\1" A character followed by any character, the original character,
+any other character, the original character again. It is using the 
+capture group labeled "1" two times so whatever matches the first time, 
+which could be anything the first time, has two more times 
+with any character interspersed. 
+This will match, "yuyiy" and this will not "yuyix". 
+
+
+```{r repeat-origina-3-times}
+stuff <- c("abaca","12123", "12131")
+str_subset(stuff, "(.).\\1.\\1")
+
+```
+
+
+"(.)(.)(.).*\\3\\2\\1"  Three characters followed by zero, or more 
+characters, of any kind, followed by the original three characters
+but in reverse order. 
+
+```{r three-zero-reverse-three}
+stuff <- c("abccba","abcxcba", "123x329","123329","123xx321")
+str_subset(stuff, "(.)(.)(.).*\\3\\2\\1")
+
+```
+
+
+# Task 4 - Construct regular expressions to match words that:
+
+
+## Start and end with the same character.
+
+
+
+```{r start-end-same-character}
+
+library(stringr)
+stuff <- c("else","left","right","dead")
+str_subset(stuff,"^(.)((.*\\1$)|\\1?$)")
+```
+
+
+
+## Contain a repeated pair of letters (e.g. "church" contains "ch" repeated twice.)
+
+```{r repeated-pair-letters}
+
+stuff <- c("cart","horse","church","mouse","ab888ab")
+str_subset(stuff,"([A-Za-z][A-Za-z]).*\\1")
+```
+
+
+
+## Contain one letter repeated in at least three places (e.g. "eleven" 
+## contains three "e"s.)
+
+```{r one-letter-atleast-3places}
+stuff <- c("eleven","available","rabbit","chevrolet")
+str_subset(stuff,"([a-z]).*\\1.*\\1")
+
+
+```
+
+
+
+
+
+
