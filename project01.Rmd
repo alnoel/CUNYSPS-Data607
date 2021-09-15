@@ -1,0 +1,175 @@
+---
+title: "Project 1"
+author: "Alan Noel"
+date: "9/15/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+# Convert Chess Tournament Text File to CSV with Transformation
+
+## Load Libraries Needed 
+
+```{r load-libraries}
+library(dplyr)
+library(curl)
+```
+## Load Text File from GitHub
+```{r load-text-file, warning=FALSE}
+# Load text file into a character vector
+
+hold <- readLines (curl("https://raw.githubusercontent.com/alnoel/CUNYSPS-Data607/main/tournamentinfo.txt"))
+```
+
+## Create Empty Data Frame to Hold Values Extracted From The Text File  
+
+```{r ure, echo=FALSE}
+extracts <- data.frame(pairnum=character(),
+                       state=character(),
+                       name=character(),
+                       totalpoints=character(),
+                       rnd1=character(),
+                       rnd2=character(),
+                       rnd3=character(),
+                       rnd4=character(),
+                       rnd5=character(),
+                       rnd6=character(),
+                       rnd7=character(),
+                       prerating=character(),
+                       stringsAsFactors=FALSE)
+```
+
+## Extract values 
+
+Start at 5th item in the vector 'hold'. Each player has two items/rows in the vector.
+Process the first row for the player then skip to second row for the player. Then
+process the second row for the player. Skip to the next player and move values picked out
+over to the "extracts" data frame to hold them for later determining the average 
+pre chess rating of opponents. 
+
+
+```{r loop-and-extract}
+
+i <- 5
+while (i < length(hold)){
+
+  pairnum <- substr(hold[i],1,5)
+  name <-  substr(hold[i],9,39)
+  totalpoints <-  substr(hold[i],42,45)
+  rnd1 <-  substr(hold[i],51,52)
+  rnd2 <-  substr(hold[i],57,58)
+  rnd3 <-  substr(hold[i],63,64)
+  rnd4 <-  substr(hold[i],69,70)
+  rnd5 <-  substr(hold[i],75,76)
+  rnd6 <-  substr(hold[i],81,82)
+  rnd7 <-  substr(hold[i],87,88)
+
+  i = i +1
+  state <- substr(hold[i],4,5)
+  prerating <- substr(hold[i],23,29)
+  extracts[nrow(extracts)+1,] = c(pairnum,state,name,totalpoints,rnd1,rnd2,rnd3,rnd4, rnd5,rnd6,
+                                  rnd7,prerating)
+  
+  i = i + 2
+
+}
+
+```
+
+## Remove All Before "P" in Prerating
+```{r removeP}
+
+extracts$prerating <- substr(extracts$prerating, 1,4)
+```
+
+
+## Replace All Instances of Two spaces, "  ", with NA
+## in all 7 of the rnd's Columns
+
+```{r two-spaces-to-NA, warning=FALSE}
+for (i in 5:11){
+  
+  extracts[,i] <- gsub("  ",NA, extracts[,i])
+}
+```
+
+
+## Convert the Following Variables/Columns to Numeric: 
+# pairnum, totalpoints, rnd1-rnd7, prerating
+
+```{r convert-numeric}
+
+extracts$pairnum <- as.numeric(extracts$pairnum)
+extracts$totalpoints <- as.numeric(extracts$totalpoints)
+extracts$rnd1 <- as.numeric(extracts$rnd1)
+extracts$rnd2 <- as.numeric(extracts$rnd2)
+extracts$rnd3 <- as.numeric(extracts$rnd3)
+extracts$rnd4 <- as.numeric(extracts$rnd4)
+extracts$rnd5 <- as.numeric(extracts$rnd5)
+extracts$rnd6 <- as.numeric(extracts$rnd6)
+extracts$rnd7 <- as.numeric(extracts$rnd7)
+extracts$prerating <- as.numeric(extracts$prerating)
+
+```
+
+## Create Empty Data Frame to Hold Final Results, a CSV File
+
+```{r empty-dataframe}
+finalresults <- data.frame(name=character(),
+                           state=character(),
+                           totalpoints=double(),
+                           prerating=double(),
+                           oppavgprerating=double(),
+                           stringsAsFactors=FALSE)
+```
+
+## Calculate Average Pre Chess Rating of Opponents
+
+```{r calculate-average-prechess}
+for (i in 1:nrow(extracts)){
+  calcvector <- vector()
+  for (j in 5:11){
+    if (!is.na(extracts[i,j])){
+      
+      oppnum <-extracts[i,j]
+      opppre <- extracts[oppnum,12]
+      calcvector <- c(calcvector,opppre)
+    }   
+  }
+  avgprechessop <-round(mean(calcvector),0)
+
+  
+  finalresults[nrow(finalresults) +1,] =
+    c(extracts[i,3], # name
+      extracts[i,2], # state
+      extracts[i,4], # total points
+      extracts[i,12], # prerating
+      avgprechessop  # avg pre chess rating of opponents
+      
+    )
+}
+
+
+```
+
+## Use trimws to Remove leading and Trailing blank characters
+
+```{r remove-leading-trailing}
+finalresults$name <- trimws(finalresults$name)
+```
+
+
+## Write Data Frame to csv file. Don't include row names, i.e. "1","2","3", etc.
+```{r write-csv-file }
+write.csv(finalresults, "finalresults.csv",row.names= FALSE)
+
+```
+
+ 
+
+
