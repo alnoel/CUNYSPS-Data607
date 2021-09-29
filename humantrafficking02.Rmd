@@ -1,0 +1,143 @@
+---
+title: "DATA 607 Project 2 - Human Trafficking"
+author: "Alan Noel and Bianka Figueroa"
+date: "9/27/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Human Trafficking
+
+
+Human trafficking is the trade of humans for the purpose of forced labor, sexual slavery, or commercial sexual exploitation for the trafficker or others. This may encompass providing a spouse in the context of forced marriage, or the extraction of organs or tissues, including for surrogacy and ova removal. Human trafficking can occur within a country or trans-nationally. Human trafficking is a crime against the person because of the violation of the victim's rights of movement through coercion and because of their commercial exploitation. Human trafficking is the trade in people, especially women and children, and does not necessarily involve the movement of the person from one place to another.
+
+The Counter-Trafficking Data Collaborative (CTDC) is a global data hub on human trafficking, publishing data from counter-trafficking organizations around the world. Launched in November 2017, the goal of CTDC is to break down information-sharing barriers and equip the counter-trafficking community with up to date, reliable data on human trafficking. Historically, it has been difficult to make data on human trafficking readily accessible to analysts, academics, practitioners and policy-makers. Data on human trafficking are often highly sensitive raising a range of privacy and civil liberty concerns where the risk of identifying data subjects can be high and the consequences severe.
+
+CTDC has created a single CSV file that provides data regarding human trafficking world wide. The most recent version was assembled in April 2020 and includes data from 2002 through 2018. 
+There are 48,801 observations in the file with 63 variables.There are variables regarding such things as means of control, e.g. meansOfControlDebtBondage or meansOfControlPsychologicalAbuse, and type of labor, e.g. typeOfLabourAgriculture or typeOfLabourDomesticWork.
+
+Analytical Questions are:
+
+          Which Means of Control Has Occurred the Most Over the Years? 
+
+          Which Type of Labor Most Occurred in 2018? 
+
+## Download Large CSV File of 48,000 Observations and 63 Variables
+
+```{r retrieve-global-dataset}
+library(curl)
+library(tidyverse)
+library(naniar)
+globaldata <- 
+read.csv (curl("https://raw.githubusercontent.com/alnoel/CUNYSPS-Data607/main/globaldataset_20200414.csv"))
+
+
+# remove variable that is terms of use
+globaldata = select(globaldata,-1)
+
+# select out from the 63 variables only those that are in regards to Means of Control. 
+subset.means <-  select(globaldata, matches("meansOfControl"))
+means.columns <- colnames(subset.means)
+# remove non-specific means of control variables
+means.columns <- means.columns[-c(17,18,19)]
+
+
+# convert numerous -99 values to NA. This takes a long time to run 
+subset.means <- subset.means %>% replace_with_na_all(condition = ~.x == -99)
+
+```
+
+## 
+
+```{r  extract-sum-store-means}
+
+# create empty data set to hold counts per means of control 
+meansdf <- data.frame(means=character(),
+                        total = numeric(),
+                        stringsAsFactors=FALSE)
+
+# select over just columns of interest
+# and sum the 1's . 1's and 0's are used to indicate if 
+# if an observation fits the category of the variable 
+for (i in 1:length(means.columns)){
+  hold <- select(subset.means, means.columns[i])
+  meansdf[nrow(meansdf)+1,]= c(means.columns[i],sum(hold,na.rm =TRUE))
+}
+
+# mutate to get percentage 
+meansdf$total <- as.numeric(meansdf$total)
+meansdf <- mutate(meansdf, percent = total/sum(total) * 100)
+meansdf$percent <- round(meansdf$percent,2)
+arrange(meansdf, desc(total))
+
+```
+
+## Plot Shows Psychological the Most Often Means of Control 
+
+```{r bar-plot-means}
+ggplot(data = meansdf) + geom_bar(mapping = aes(x= percent,y= means),stat = 'identity')
+```
+
+## Which Type of Labor is Most used? 
+
+
+```{r type-labor-2018}
+# select over just columns of interest 
+# and filter for year 2018
+subset.labor <-  select(globaldata, matches("typeofLabour") ,yearOfRegistration) %>%
+                 filter(yearOfRegistration == '2018')
+```
+
+
+
+```{r extract-sum-store-labor}
+means.columns <- colnames(subset.labor)
+# remove non-specific means of control variables
+means.columns <- means.columns[-c(12,13,14)]
+
+# convert all -99's to NA's
+subset.labor <- subset.labor %>% replace_with_na_all(condition = ~.x == -99)
+
+# create data frame to hold results
+
+labordf <- data.frame(means=character(),
+                        total = numeric(),
+                        stringsAsFactors=FALSE)
+
+for (i in 2:length(means.columns)-1){
+  hold <- select(subset.labor, means.columns[i])
+  labordf[nrow(labordf)+1,]= c(means.columns[i],sum(hold,na.rm =TRUE))
+}
+
+
+labordf$total <- as.numeric(labordf$total)
+# use mutate to add percentage variable 
+labordf <- mutate(labordf, percent = total/sum(total) * 100)
+labordf$percent <- round(labordf$percent,2)
+labordf
+
+# use arrange to sort the results 
+arrange(labordf, desc(total))
+
+```
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
